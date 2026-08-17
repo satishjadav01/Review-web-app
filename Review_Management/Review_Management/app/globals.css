@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+@theme { --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; --font-display: ui-serif, Georgia, serif; }
+
+:root { --color-black: #000000; --color-muted: #B9BAA3; --color-light: #D6D5C9; --color-red: #A22C29; --color-deep-red: #902923; --background: var(--color-light); --foreground: var(--color-black); --surface: #ffffff; --line: var(--color-muted); }
+* { border-color: color-mix(in srgb, var(--color-muted) 62%, transparent); }
+body { background: var(--background); color: var(--foreground); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+.font-display { font-family: var(--font-display); }
+::selection { background: var(--color-red); color: #ffffff; }
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+button, a { transition: color .18s ease, background-color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease, opacity .18s ease; }
+input, select, textarea { transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--color-red) !important; box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-red) 18%, transparent) !important; }
+
+/* Palette bridge for legacy utility classes; applies the unified visual system on all routes. */
+.text-zinc-900,.text-zinc-800,.text-gray-900,.text-slate-900,.text-slate-950,.text-gray-800 { color: var(--color-black) !important; }
+.text-zinc-700,.text-zinc-600,.text-gray-700,.text-slate-700 { color: color-mix(in srgb, var(--color-black) 76%, var(--color-muted)) !important; }
+.text-zinc-500,.text-zinc-400,.text-zinc-300,.text-gray-500,.text-gray-400,.text-slate-500,.text-slate-400 { color: color-mix(in srgb, var(--color-black) 52%, var(--color-muted)) !important; }
+.bg-zinc-50,.bg-zinc-100,.bg-gray-50,.bg-gray-100,.bg-slate-50 { background-color: var(--color-light) !important; }
+.bg-zinc-200,.bg-gray-200,.bg-slate-200 { background-color: var(--color-muted) !important; }
+.bg-zinc-900,.bg-gray-900,.bg-slate-900,.bg-slate-950 { background-color: var(--color-black) !important; }
+.border-zinc-100,.border-zinc-200,.border-zinc-300,.border-zinc-400,.border-gray-100,.border-gray-200,.border-slate-100,.border-slate-200 { border-color: color-mix(in srgb, var(--color-muted) 70%, transparent) !important; }
+.text-blue-500,.text-blue-600,.text-blue-700,.text-sky-300,.text-sky-400,.text-sky-500,.text-emerald-500,.text-emerald-600,.text-emerald-700,.text-green-500,.text-green-600,.text-green-700,.text-purple-500,.text-amber-500,.text-yellow-400 { color: var(--color-red) !important; }
+.bg-blue-50,.bg-blue-500,.bg-sky-50,.bg-sky-500,.bg-emerald-50,.bg-emerald-500,.bg-green-50,.bg-green-500,.bg-purple-50,.bg-yellow-400 { background-color: color-mix(in srgb, var(--color-red) 12%, #ffffff) !important; }
+[class*="hover:bg-"]:hover { background-color: var(--color-deep-red) !important; }
+[class*="hover:text-"]:hover { color: var(--color-red) !important; }
+[class*="focus:border-"]:focus { border-color: var(--color-red) !important; }
+.admin-sidebar-nav a:hover { color: #ffffff !important; }
+.divide-zinc-50 > :not(:last-child) { border-color: color-mix(in srgb, var(--color-muted) 45%, transparent) !important; }
+/* Remove legacy decorative gradients in favour of the restrained brand palette. */
+[class*="bg-gradient"] { background-image: none !important; background-color: var(--color-light) !important; }
+[class*="text-transparent"] { color: var(--color-red) !important; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-muted); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-red); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }

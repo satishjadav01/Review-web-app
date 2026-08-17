@@ -1,0 +1,129 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("brand_admin")
+  brandId   String?  @db.Uuid
+  brand     Brand?   @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([brandId])
+}
+
+model Brand {
+  id                      String       @id @default(uuid()) @db.Uuid
+  name                    String
+  slug                    String?      @unique
+  logoUrl                 String?
+  primaryColor            String       @default("#facc15")
+  googlePlaceId           String
+  websiteType             String       @default("other")
+  shopifyStoreUrl         String?
+  shopifyAccessToken      String?
+  whatsappPhoneNumber     String?
+  whatsappPhoneNumberId   String?
+  whatsappSenderId        String?
+  whatsappApiKey          String?
+  whatsappHasButton       Boolean      @default(false)
+  whatsappTemplateName    String?
+  whatsappTemplateLanguage String      @default("en_US")
+  reviewMessageTemplate   String?
+  resendApiKey            String?
+  brandEmail              String?
+  smtpHost                String?
+  smtpPort                String       @default("587")
+  smtpUser                String?
+  smtpPass                String?
+  useSMTP                 Boolean      @default(false)
+  isActive                Boolean      @default(true)
+  shareCategories         Json?
+  localizedWhatsappDrafts Json?
+  createdAt               DateTime     @default(now())
+  updatedAt               DateTime     @updatedAt
+
+  users                   User[]
+  customers               Customer[]
+  reviews                 Review[]
+  reviewLinks             ReviewLink[]
+}
+
+model Customer {
+  id          String       @id @default(uuid()) @db.Uuid
+  brandId     String       @db.Uuid
+  brand       Brand        @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  name        String?
+  email       String?
+  phone       String?
+  orderId     String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  reviews     Review[]
+  reviewLinks ReviewLink[]
+
+  @@index([brandId])
+  @@index([brandId, createdAt])
+  @@index([email])
+  @@index([phone])
+}
+
+model Review {
+  id          String    @id @default(uuid()) @db.Uuid
+  brandId     String    @db.Uuid
+  brand       Brand     @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  customerId  String?   @db.Uuid
+  customer    Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  orderId     String?
+  rating      Int
+  feedback    String?
+  isPublic    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([brandId])
+  @@index([customerId])
+  @@index([brandId, createdAt])
+}
+
+model ReviewLink {
+  id           String   @id @default(uuid()) @db.Uuid
+  brandId      String   @db.Uuid
+  brand        Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  customerId   String   @db.Uuid
+  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  orderId      String?
+  token        String   @unique
+  isUsed       Boolean  @default(false)
+  whatsappSent Boolean  @default(false)
+  emailSent    Boolean  @default(false)
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([brandId])
+  @@index([customerId])
+  @@index([brandId, orderId])
+  @@index([token])
+}
+
+model ContactRequest {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  email     String
+  phone     String
+  message   String?
+  plan      String
+  status    String   @default("new")
+  createdAt DateTime @default(now())
+}
