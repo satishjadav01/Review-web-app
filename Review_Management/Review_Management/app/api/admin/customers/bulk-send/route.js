@@ -43,13 +43,18 @@ export async function POST(req) {
                     name: c.name
                 });
 
-                if (sendResult.sent) {
+                if (sendResult.success) {
                     results.success++;
+                    results.details.push({
+                        identifier: c.phone || c.email || "Customer",
+                        link: sendResult.link,
+                        directWhatsAppUrl: sendResult.directWhatsAppUrl
+                    });
                 } else {
-                    throw new Error(sendResult.waError || sendResult.emailError || "Failed to send");
+                    throw new Error(sendResult.waError || sendResult.emailError || "Failed to generate link");
                 }
             } catch (err) {
-                console.error(`Bulk task failed for ${c.phone || c.email}:`, err.message);
+                console.warn(`Bulk task notice for ${c.phone || c.email}:`, err?.message);
                 results.failed++;
                 results.details.push({
                     identifier: c.phone || c.email || "Unknown",

@@ -33,10 +33,10 @@ export default function LoginPage() {
                 });
                 setIsLoading(false);
             } else {
-                toast.success("Welcome back", {
+                toast.success("Welcome back! Redirecting...", {
                     id: toastId,
                 });
-                router.push("/admin");
+                window.location.href = "/admin";
             }
         } catch (error) {
             toast.error("Something went wrong", { id: toastId });

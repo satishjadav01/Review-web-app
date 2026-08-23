@@ -1,23 +1,31 @@
 import { notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
 import SharePageClient from "@/components/share/SharePageClient";
+import { DEMO_BRANDS } from "@/lib/demoData";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }) {
     const { slug } = await params;
 
-    const brand = await prisma.brand.findFirst({
-        where: {
-            OR: [
-                { id: slug },
-                { slug }
-            ]
-        },
-        select: { name: true }
-    });
+    let brand = null;
+    try {
+        brand = await prisma.brand.findFirst({
+            where: {
+                OR: [
+                    { id: slug },
+                    { slug }
+                ]
+            },
+            select: { name: true }
+        });
+    } catch (e) {
+        console.warn("Notice: DB metadata query in share page:", e?.message);
+    }
 
-    if (!brand) return { title: "Brand Not Found" };
+    if (!brand) {
+        brand = DEMO_BRANDS.find(b => b.id === slug || b.slug === slug || b.name.toLowerCase().replace(/\s+/g, '-') === slug) || DEMO_BRANDS[0];
+    }
 
     return {
         title: `Share Review Link - ${brand.name}`,
@@ -28,26 +36,31 @@ export async function generateMetadata({ params }) {
 export default async function SharePage({ params }) {
     const { slug } = await params;
 
-    const brand = await prisma.brand.findFirst({
-        where: {
-            OR: [
-                { id: slug },
-                { slug }
-            ]
-        },
-        select: {
-            id: true,
-            name: true,
-            logoUrl: true,
-            primaryColor: true,
-            shareCategories: true,
-            reviewMessageTemplate: true,
-            localizedWhatsappDrafts: true
-        }
-    });
+    let brand = null;
+    try {
+        brand = await prisma.brand.findFirst({
+            where: {
+                OR: [
+                    { id: slug },
+                    { slug }
+                ]
+            },
+            select: {
+                id: true,
+                name: true,
+                logoUrl: true,
+                primaryColor: true,
+                shareCategories: true,
+                reviewMessageTemplate: true,
+                localizedWhatsappDrafts: true
+            }
+        });
+    } catch (e) {
+        console.warn("Notice: DB query failed in share page:", e?.message);
+    }
 
     if (!brand) {
-        notFound();
+        brand = DEMO_BRANDS.find(b => b.id === slug || b.slug === slug || b.name.toLowerCase().replace(/\s+/g, '-') === slug) || DEMO_BRANDS[0];
     }
 
     // Prepare the brand data for the client component

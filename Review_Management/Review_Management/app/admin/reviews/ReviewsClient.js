@@ -55,8 +55,8 @@ export default function ReviewsClient({ initialReviews, initialSearch, paginatio
                         <p className="text-sm text-zinc-500 max-w-xs mx-auto">Try adjusting your search or switching brands to see more results.</p>
                     </div>
                 ) : (
-                    currentData.map((review) => (
-                        <div key={review._id} className="group bg-white p-6 rounded-[28px] border border-zinc-200 shadow-sm flex flex-col justify-between gap-6 hover:shadow-xl hover:shadow-zinc-200/50 hover:border-zinc-300 transition-all duration-300">
+                    currentData.map((review, idx) => (
+                        <div key={review.id || review._id || idx} className="group bg-white p-6 rounded-[28px] border border-zinc-200 shadow-sm flex flex-col justify-between gap-6 hover:shadow-xl hover:shadow-zinc-200/50 hover:border-zinc-300 transition-all duration-300">
                             <div className="space-y-5">
                                 <div className="flex items-center justify-between">
                                     <div className="flex gap-1">

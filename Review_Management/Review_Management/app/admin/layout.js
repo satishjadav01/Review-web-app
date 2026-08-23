@@ -1,10 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import {
-    Star,
     LogOut,
-    Bell,
-    Search,
 } from "lucide-react";
 import { auth, signOut } from "@/auth";
 import { redirect } from "next/navigation";
@@ -14,7 +11,7 @@ import AdminSidebarNav from "./AdminSidebarNav";
 export default async function AdminLayout({ children }) {
     const session = await auth();
 
-    if (!session) {
+    if (!session?.user) {
         redirect("/login");
     }
 
@@ -76,17 +73,6 @@ export default async function AdminLayout({ children }) {
                             <p className="text-[10px] font-bold uppercase tracking-[.16em] text-black/45">Workspace</p>
                             <p className="text-sm font-semibold text-black">{isSuperAdmin ? 'Global Administration' : 'Brand Management'}</p>
                         </div>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                        <label className="hidden md:flex items-center gap-2 h-10 w-56 px-3 rounded-xl border border-[#B9BAA3] bg-white text-black/50 focus-within:border-[#A22C29]">
-                            <Search size={16} />
-                            <input aria-label="Search" placeholder="Search workspace" className="w-full bg-transparent text-sm outline-none placeholder:text-black/40" />
-                        </label>
-                        <button aria-label="Notifications" className="relative w-10 h-10 grid place-items-center rounded-xl border border-[#B9BAA3] bg-white text-black/55 hover:text-[#A22C29] hover:border-[#A22C29] transition-all">
-                            <Bell size={20} />
-                            <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-[#A22C29]" />
-                        </button>
                     </div>
                 </header>
 

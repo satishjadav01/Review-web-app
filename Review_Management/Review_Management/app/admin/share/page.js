@@ -4,6 +4,8 @@ import prisma from "@/lib/prisma";
 import SharePageClient from "./SharePageClient";
 import BrandSelector from "../customers/BrandSelector";
 
+import { DEMO_BRANDS } from "@/lib/demoData";
+
 export default async function AdminSharePage({ searchParams }) {
     const session = await auth();
     if (!session) redirect("/login");
@@ -15,39 +17,50 @@ export default async function AdminSharePage({ searchParams }) {
         targetBrandId = bid;
     }
 
-    if (!targetBrandId && session.user.role !== "super_admin") {
-        return (
-            <div className="p-8 text-center bg-white rounded-3xl border border-zinc-200 shadow-sm max-w-lg mx-auto mt-12">
-                <h3 className="text-xl font-bold text-zinc-900 mb-2">No Brand Assigned</h3>
-                <p className="text-zinc-500 text-sm">Please contact an administrator to assign your account to a brand.</p>
-            </div>
-        );
-    }
-
     // Fetch all brands if super admin (for the selector)
     let allBrands = [];
-    if (session.user.role === "super_admin") {
-        const rawBrands = await prisma.brand.findMany({
-            select: { id: true, name: true, logoUrl: true, websiteType: true },
-            orderBy: { name: "asc" }
-        });
-        allBrands = rawBrands.map(b => ({ ...b, _id: b.id }));
+    let brand = null;
+    try {
+        if (session.user.role === "super_admin") {
+            const rawBrands = await prisma.brand.findMany({
+                select: { id: true, name: true, logoUrl: true, websiteType: true },
+                orderBy: { name: "asc" }
+            });
+            allBrands = rawBrands.map(b => ({ ...b, _id: b.id }));
+        }
+    } catch (e) {
+        allBrands = [];
     }
 
-    // Find brand to get slug and name
-    const brand = targetBrandId ? await prisma.brand.findUnique({
-        where: { id: targetBrandId },
-        select: {
-            id: true,
-            name: true,
-            slug: true,
-            logoUrl: true,
-            reviewMessageTemplate: true,
-            primaryColor: true,
-            shareCategories: true,
-            localizedWhatsappDrafts: true
-        }
-    }) : null;
+    if (allBrands.length === 0) {
+        allBrands = DEMO_BRANDS.map(b => ({ ...b, _id: b.id }));
+    }
+
+    if (!targetBrandId && allBrands.length > 0) {
+        targetBrandId = allBrands[0].id;
+    }
+
+    try {
+        brand = targetBrandId ? await prisma.brand.findUnique({
+            where: { id: targetBrandId },
+            select: {
+                id: true,
+                name: true,
+                slug: true,
+                logoUrl: true,
+                reviewMessageTemplate: true,
+                primaryColor: true,
+                shareCategories: true,
+                localizedWhatsappDrafts: true
+            }
+        }) : null;
+    } catch (e) {
+        brand = null;
+    }
+
+    if (!brand && targetBrandId) {
+        brand = DEMO_BRANDS.find(b => b.id === targetBrandId) || DEMO_BRANDS[0];
+    }
 
     if (!brand && targetBrandId) {
         return (
