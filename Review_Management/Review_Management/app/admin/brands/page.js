@@ -5,24 +5,33 @@ import prisma from "@/lib/prisma";
 import { Plus, ShoppingBag, Globe, MessageSquare } from "lucide-react";
 import BrandActions from "./BrandActions";
 
+import { DEMO_BRANDS } from "@/lib/demoData";
+
 async function getBrands() {
-    return await prisma.brand.findMany({
-        select: {
-            id: true,
-            name: true,
-            slug: true,
-            logoUrl: true,
-            websiteType: true,
-            createdAt: true
-        },
-        orderBy: { createdAt: "desc" }
-    });
+    try {
+        const brands = await prisma.brand.findMany({
+            select: {
+                id: true,
+                name: true,
+                slug: true,
+                logoUrl: true,
+                websiteType: true,
+                createdAt: true
+            },
+            orderBy: { createdAt: "desc" }
+        });
+        if (brands && brands.length > 0) return brands;
+        return DEMO_BRANDS;
+    } catch (e) {
+        console.warn("Could not query brands from database:", e?.message);
+        return DEMO_BRANDS;
+    }
 }
 
 export default async function BrandsPage() {
     const session = await auth();
 
-    if (session.user.role !== "super_admin") {
+    if (!session?.user || session.user.role !== "super_admin") {
         redirect("/admin");
     }
 

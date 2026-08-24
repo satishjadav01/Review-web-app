@@ -51,7 +51,7 @@ export default function CustomersTable({
     if (selectedIds.length === currentData.length) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(currentData.map((c) => c._id));
+      setSelectedIds(currentData.map((c) => c.id || c._id));
     }
   };
 
@@ -73,7 +73,7 @@ export default function CustomersTable({
 
     try {
       const selectedCustomers = initialCustomers.filter((c) =>
-        selectedIds.includes(c._id),
+        selectedIds.includes(c.id || c._id),
       );
       const res = await axios.post("/api/admin/customers/bulk-send", {
         customers: selectedCustomers.map((c) => ({
@@ -226,31 +226,34 @@ export default function CustomersTable({
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-50">
-              {currentData.map((item) => (
-                <tr
-                  key={item._id}
-                  className={cn(
-                    "group transition-all duration-200",
-                    selectedIds.includes(item._id)
-                      ? "bg-zinc-50/80"
-                      : "hover:bg-zinc-50/40",
-                  )}
-                >
-                  <td className="px-3 py-3 text-center">
-                    <button
-                      onClick={() => toggleSelect(item._id)}
-                      className={cn(
-                        "w-4 h-4 mx-auto rounded border flex items-center justify-center transition-all",
-                        selectedIds.includes(item._id)
-                          ? "bg-zinc-900 border-zinc-900 text-white"
-                          : "bg-white border-zinc-200 group-hover:border-zinc-400",
-                      )}
-                    >
-                      {selectedIds.includes(item._id) && (
-                        <CheckCircle2 size={10} strokeWidth={3} />
-                      )}
-                    </button>
-                  </td>
+              {currentData.map((item, idx) => {
+                const itemId = item.id || item._id || idx;
+                const isSelected = selectedIds.includes(itemId);
+                return (
+                  <tr
+                    key={itemId}
+                    className={cn(
+                      "group transition-all duration-200",
+                      isSelected
+                        ? "bg-zinc-50/80"
+                        : "hover:bg-zinc-50/40",
+                    )}
+                  >
+                    <td className="px-3 py-3 text-center">
+                      <button
+                        onClick={() => toggleSelect(itemId)}
+                        className={cn(
+                          "w-4 h-4 mx-auto rounded border flex items-center justify-center transition-all",
+                          isSelected
+                            ? "bg-zinc-900 border-zinc-900 text-white"
+                            : "bg-white border-zinc-200 group-hover:border-zinc-400",
+                        )}
+                      >
+                        {isSelected && (
+                          <CheckCircle2 size={10} strokeWidth={3} />
+                        )}
+                      </button>
+                    </td>
                   <td className="px-3 py-3">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center text-[10px] font-black text-white shadow-sm shrink-0">
@@ -344,7 +347,8 @@ export default function CustomersTable({
                     />
                   </td>
                 </tr>
-              ))}
+              );
+            })}
             </tbody>
           </table>
         </div>

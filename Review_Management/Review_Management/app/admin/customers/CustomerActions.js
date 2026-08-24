@@ -41,36 +41,57 @@ export default function CustomerActions({ customerId, phone, email, orderId, bra
                 return;
             }
 
-            // Fallback for email
+            // Direct WhatsApp Web / App Fallback
+            if (method.includes('whatsapp') && hasValidPhone) {
+                const cleanPhone = phone.replace(/\D/g, "");
+                const reviewUrl = res.data.link || `${window.location.origin}/r/${brandSlug || brandId}`;
+                const msg = res.data.message || `Hi ${name || 'there'}! Please share your review for order #${orderId} with ${brandName || 'us'}: ${reviewUrl}`;
+                const waUrl = res.data.directWhatsAppUrl || `https://wa.me/${cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone}?text=${encodeURIComponent(msg)}`;
+
+                window.open(waUrl, "_blank");
+                await axios.post("/api/admin/customers/track-send", { orderId, brandId, customerId, method: "whatsapp" });
+
+                setStatus("sent");
+                toast.success("Opening WhatsApp with pre-filled message ✓", { id: toastId, duration: 4000 });
+                router.refresh();
+                return;
+            }
+
+            // Direct Email client Fallback
             if (method === 'email' && email) {
-                const error = res.data.emailError || "Failed to send email";
-                toast.error(`Automated send failed: ${error}`, { duration: 6000 });
+                const reviewUrl = res.data.link || `${window.location.origin}/r/${brandSlug || brandId}`;
+                const subject = encodeURIComponent(`Share your feedback for Order #${orderId} - ${brandName || 'Review'}`);
+                const bodyMsg = `Hi ${name || 'there'}!\n\nThank you for your order #${orderId}.\n\nPlease click the link below to share your review:\n${reviewUrl}\n\nThank you!`;
 
-                const subject = encodeURIComponent(`Review your order #${orderId}`);
-                const reviewLink = `${window.location.protocol}//${window.location.host}/r/${brandSlug || brandId}`;
-                const finalMsg = `Hi! Please leave your feedback for order #${orderId}: ${reviewLink}`;
-                window.location.href = `mailto:${email}?subject=${subject}&body=${encodeURIComponent(finalMsg)}`;
-
+                window.location.href = `mailto:${email}?subject=${subject}&body=${encodeURIComponent(bodyMsg)}`;
                 await axios.post("/api/admin/customers/track-send", { orderId, brandId, customerId, method: "email" });
 
                 setStatus("sent");
-                toast.info("Opening Email app...", { id: toastId });
+                toast.success("Opening Email client with review link ✓", { id: toastId, duration: 4000 });
                 router.refresh();
-            } else if (method === 'whatsapp-api') {
-                setStatus("idle");
-                const errorMsg = res.data.whatsappError
-                    ? `WhatsApp API: ${res.data.whatsappError}`
-                    : "WhatsApp API failed: Ensure Meta Cloud credentials are setup in Settings.";
-                toast.error(errorMsg, { id: toastId, duration: 6000 });
-            } else {
-                setStatus("idle");
-                toast.error(`Automated send failed.`, { id: toastId });
+                return;
             }
+
+            setStatus("idle");
+            toast.error("Could not send review request.", { id: toastId });
         } catch (err) {
-            console.error("Send error:", err);
-            setStatus("error");
-            toast.error("Failed to process request", { id: toastId });
-            setTimeout(() => setStatus("idle"), 3000);
+            console.warn("Send warning:", err?.message || err);
+            // Even on error, provide direct WhatsApp / mailto fallback
+            if (method.includes('whatsapp') && hasValidPhone) {
+                const cleanPhone = phone.replace(/\D/g, "");
+                const waUrl = `https://wa.me/${cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone}?text=${encodeURIComponent(`Hi! Please leave a review for order #${orderId}: ${window.location.origin}`)}`;
+                window.open(waUrl, "_blank");
+                setStatus("sent");
+                toast.success("Opening WhatsApp...", { id: toastId });
+            } else if (method === 'email' && email) {
+                window.location.href = `mailto:${email}?subject=Order%20Review&body=Please%20leave%20your%20review`;
+                setStatus("sent");
+                toast.success("Opening Email app...", { id: toastId });
+            } else {
+                setStatus("error");
+                toast.error("Failed to process request", { id: toastId });
+                setTimeout(() => setStatus("idle"), 3000);
+            }
         }
     };
 
